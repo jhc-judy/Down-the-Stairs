@@ -50,13 +50,90 @@ Example.catapult = function () {
 
         }
 
-//        if (teeth.position.y - circle.position.y < -30) {
-//            Matter.Body.setVelocity(circle, {
-//                x: 0,
-//                y: -5
-//            });
-//        }
+        //        if (teeth.position.y - circle.position.y < -30) {
+        //            Matter.Body.setVelocity(circle, {
+        //                x: 0,
+        //                y: -5
+        //            });
+        //        }
     })
+
+    const loadImage = (url, onSuccess, onError) => {
+        const img = new Image();
+        img.onload = () => {
+            onSuccess(img.src);
+        };
+        img.onerror = onError();
+        img.src = url;
+    };
+
+    loadImage(
+        "images/kirby.gif",
+        url => {
+            console.log("Success");
+            World.add(world, [
+            Bodies.circle(400, 150, 20, {
+                    render: {
+                        sprite: {
+                            texture: 'images/kirby.gif',
+                            xScale: 0.2,
+                            yScale: 0.2
+                        }
+                    },
+                    density: 0.005
+                }),
+            Bodies.rectangle(400, 600, 1900, 50.5, {
+                    //                    render: {
+                    //                        sprite: {
+                    //                            texture: 'images/wall.png',
+                    //                            xScale: 3,
+                    //                            yScale: 0.08
+                    //                        }
+                    //                    },
+                    isStatic: true
+                }), //ground
+            Bodies.rectangle(800, 300, 50, 600, {
+                    //                    render: {
+                    //                        sprite: {
+                    //                            texture: 'images/wall.png',
+                    //                            xScale: 0.1,
+                    //                            yScale: 2
+                    //                        }
+                    //                    },
+                    isStatic: true
+                }), //wall
+            Bodies.rectangle(0, 300, 50, 600, {
+                    //                    render: {
+                    //                        sprite: {
+                    //                            texture: 'images/wall.png',
+                    //                            xScale: 0.1,
+                    //                            yScale: 2
+                    //                        }
+                    //                    },
+                    isStatic: true
+                }),
+                Composites.stack(29, 290, 33, 1, 0, 0, function (x, y) {
+                    return Bodies.polygon(x, 30, 3, 13, {
+                        render: {
+                            sprite: {
+                                texture: 'images/triangle.png',
+                                xScale: 0.04,
+                                yScale: 0.04
+                            }
+                        },
+                        angle: Math.PI * 1 / 3,
+                        isStatic: true,
+                        collisionFilter: {
+                            group: group
+                        }
+                    });
+                })
+        ]);
+        },
+        () => {
+            console.log("Error  Loading ");
+        }
+    );
 
     // create renderer
     var render = Render.create({
@@ -65,9 +142,13 @@ Example.catapult = function () {
         options: {
             width: window.innerWidth * 0.99,
             height: window.innerHeight * 0.75,
-            showAngleIndicator: true,
-            showCollisions: true
-
+            showAngleIndicator: false,
+            showCollisions: true,
+            wireframes: false,
+            showBroadphase: false,
+            showBounds: true,
+            showVelocity: false,
+            showSeparations: true,
         }
     });
 
@@ -80,20 +161,17 @@ Example.catapult = function () {
     // add bodies
     var group = Body.nextGroup(true);
 
-    var teeth = Composites.stack(29, 290, 33, 1, 0, 0, function (x, y) {
-        return Bodies.polygon(x, 30, 3, 13, {
-            angle: Math.PI * 1 / 6,
-            isStatic: true,
-            collisionFilter: {
-                group: group
-            }
-        });
-    });
-
 
     var makePlatform = (i) => {
 
         var platform = Bodies.rectangle(platformX, i, 100, 20, {
+            render: {
+                sprite: {
+                    texture: 'images/stone.jpg',
+                    xScale: 0.2,
+                    yScale: 0.04
+                }
+            },
             isStatic: true,
 
             collisionFilter: {
@@ -101,7 +179,7 @@ Example.catapult = function () {
             }
 
         })
-        platformX += (Math.random() - .5) * platformVariance;
+        platformX += (Math.random() - .7) * platformVariance;
         platformX = Math.min(boardEnd, Math.max(boardStart, platformX))
         //console.log( platformX)
         World.add(world, platform);
@@ -114,27 +192,6 @@ Example.catapult = function () {
 
     })
 
-
-    var circle = Bodies.circle(400, 150, 20, {
-        density: 0.005
-    });
-
-
-    World.add(world, [
-        teeth,
-//        ...Platforms,
-        Bodies.rectangle(400, 600, 1900, 50.5, {
-            isStatic: true
-        }), //ground
-        Bodies.rectangle(800, 300, 50, 600, {
-            isStatic: true
-        }), //wall
-        Bodies.rectangle(0, 300, 50, 600, {
-            isStatic: true
-        }), //wall
-        circle,
-
-    ]);
 
     var updateCircle = (delta) => {
         circle.position.x += delta * 10;

@@ -11,14 +11,14 @@ button {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
+/*    margin: 4px 2px;*/
     -webkit-transition-duration: 0.4s;
     /* Safari */
     transition-duration: 0.4s;
     cursor: pointer;
     border-radius: 15px;
     width:5vw;
-    height:5vh;
+/*    height:5vh;*/
     min-width: 55px;
     min-height: 35px;;
 }
@@ -68,6 +68,6 @@ button:hover {
 #tensorflow {
     width: 20vw;
     height: 20vh;
-    padding-left: 2%;
     transform: translateY(50px);
+    margin: auto;
 }

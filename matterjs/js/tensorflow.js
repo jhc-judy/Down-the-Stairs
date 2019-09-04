@@ -81,44 +81,43 @@ async function train() {
             }
         }
     });
-       await model.save('localstorage://my-model');
+    await model.save('localstorage://my-model');
     tf.dispose([xs, ys]);
     toggleButtons(true);
 }
 
 async function buildModel() {
     console.log("Building ")
-  if(!localStorage.length){
-    model = tf.sequential();
-    model.add(tf.layers.depthwiseConv2d({
-        depthMultiplier: 8,
-        kernelSize: [NUM_FRAMES, 3],
-        activation: 'relu',
-        inputShape: INPUT_SHAPE
-    }));
-    model.add(tf.layers.maxPooling2d({
-        poolSize: [1, 2],
-        strides: [2, 2]
-    }));
-    model.add(tf.layers.flatten());
-    model.add(tf.layers.dense({
-        units: 3,
-        activation: 'softmax'
-    }));
-    
-   
-  }
-    else{
-        
-         model = await tf.loadLayersModel('localstorage://my-model');
+    if (!localStorage.length) {
+        model = tf.sequential();
+        model.add(tf.layers.depthwiseConv2d({
+            depthMultiplier: 8,
+            kernelSize: [NUM_FRAMES, 3],
+            activation: 'relu',
+            inputShape: INPUT_SHAPE
+        }));
+        model.add(tf.layers.maxPooling2d({
+            poolSize: [1, 2],
+            strides: [2, 2]
+        }));
+        model.add(tf.layers.flatten());
+        model.add(tf.layers.dense({
+            units: 3,
+            activation: 'softmax'
+        }));
+
+
+    } else {
+
+        model = await tf.loadLayersModel('localstorage://my-model');
     }
-        const optimizer = tf.train.adam(0.01);
-      await model.compile({
+    const optimizer = tf.train.adam(0.01);
+    await model.compile({
         optimizer,
         loss: 'categoricalCrossentropy',
         metrics: ['accuracy']
-    });    
-  
+    });
+
 }
 
 function toggleButtons(enable) {
@@ -133,39 +132,44 @@ function flatten(tensors) {
 }
 
 async function moveSlider(labelTensor) {
- const label = (await labelTensor.data())[0];
- document.getElementById('console').textContent = label;
- if (label == 2) {//2 noise
-   return;
- }
- let delta = 0.1;
-  catapult.update((label*2-1)*.1);
- const prevValue = +document.getElementById('output').value; //slider
- document.getElementById('output').value =
-     prevValue + (label === 0 ? -delta : delta); //0 left, 1 right
+    const label = (await labelTensor.data())[0];
+    document.getElementById('console').textContent = label;
+    if (label == 2) { //2 noise
+        return;
+    }
+    let delta = 0.1;
+    catapult.update((label * 2 - 1) * .1);
+    const prevValue = +document.getElementById('output').value; //slider
+    document.getElementById('output').value =
+        prevValue + (label === 0 ? -delta : delta); //0 left, 1 right
 }
 
 function listen() {
- if (recognizer.isListening()) {
-   recognizer.stopListening();
-   toggleButtons(true);
-   document.getElementById('listen').textContent = 'Listen';
-   return;
- }
- toggleButtons(false);
- document.getElementById('listen').textContent = 'Stop';
- document.getElementById('listen').disabled = false;
+    if (recognizer.isListening()) {
+        recognizer.stopListening();
+        toggleButtons(true);
+        document.getElementById('listen').textContent = 'Listen';
+        return;
+    }
+    toggleButtons(false);
+    document.getElementById('listen').textContent = 'Stop';
+    document.getElementById('listen').disabled = false;
 
- recognizer.listen(async ({spectrogram: {frameSize, data}}) => {
-   const vals = normalize(data.subarray(-frameSize * NUM_FRAMES));
-   const input = tf.tensor(vals, [1, ...INPUT_SHAPE]);
-   const probs = model.predict(input);
-   const predLabel = probs.argMax(1);
-   await moveSlider(predLabel);
-   tf.dispose([input, probs, predLabel]);
- }, {
-   overlapFactor: 0.999,
-   includeSpectrogram: true,
-   invokeCallbackOnNoiseAndUnknown: true
- });
+    recognizer.listen(async ({
+        spectrogram: {
+            frameSize,
+            data
+        }
+    }) => {
+        const vals = normalize(data.subarray(-frameSize * NUM_FRAMES));
+        const input = tf.tensor(vals, [1, ...INPUT_SHAPE]);
+        const probs = model.predict(input);
+        const predLabel = probs.argMax(1);
+        await moveSlider(predLabel);
+        tf.dispose([input, probs, predLabel]);
+    }, {
+        overlapFactor: 0.999,
+        includeSpectrogram: true,
+        invokeCallbackOnNoiseAndUnknown: true
+    });
 }
