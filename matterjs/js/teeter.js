@@ -82,6 +82,7 @@ Example.catapult = function () {
                     },
                     density: 0.005
                 }),
+                //remove ground after making GG function
             Bodies.rectangle(400, 600, 1900, 50.5, {
                     //                    render: {
                     //                        sprite: {
@@ -179,8 +180,7 @@ Example.catapult = function () {
             }
 
         })
-        platformX += (Math.random() - .7) * platformVariance;
-        platformX = Math.min(boardEnd, Math.max(boardStart, platformX))
+        platformX = Math.random() * (boardEnd - boardStart) + boardStart;
         //console.log( platformX)
         World.add(world, platform);
         return platform;
